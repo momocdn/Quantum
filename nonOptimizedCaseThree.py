@@ -18,7 +18,7 @@ clause_wires = ["c0", "c1", "c2", "c3", "c4", "c5"]
 
 # Définir un appareil avec des noms de qubits
 named_wires = sudoku_wires + clause_wires + ["out0", "work"]  # Ajout du qubit de travail
-dev = qml.device("default.qubit", wires=named_wires, shots=1000)  # Utilisation de plusieurs shots pour histogramme
+dev = qml.device("default.qubit", wires=named_wires)
 
 
 # Fonction XOR utilisant deux portes CNOT
@@ -87,8 +87,6 @@ def circuit():
     # Retourner l'état complet
     # return qml.sample(wires=sudoku_wires)
     return qml.probs(wires=sudoku_wires)
-
-# print(circuit())
 
 # Exécuter le circuit et récupérer les mesures
 proba_list = circuit()
