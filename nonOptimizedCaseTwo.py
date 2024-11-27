@@ -36,7 +36,9 @@ def sudoku_diffuser():
 
     qml.broadcast(unitary=qml.Hadamard, pattern="single", wires=sudoku_wires)
     qml.broadcast(unitary=qml.PauliX, pattern="single", wires=sudoku_wires)
-    qml.MultiControlledX(wires=sudoku_wires + aux0_wire, control_values=[1,1,1,1])
+    qml.Hadamard(wires=["v3"])
+    qml.MultiControlledX(wires=sudoku_wires, control_values=[1,1,1])
+    qml.Hadamard(wires=["v3"])
     qml.broadcast(unitary=qml.PauliX, pattern="single", wires=sudoku_wires)
     qml.broadcast(unitary=qml.Hadamard, pattern="single", wires=sudoku_wires)
 

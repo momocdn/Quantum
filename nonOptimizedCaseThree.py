@@ -52,8 +52,12 @@ def diffuser(variable_wires):
     for wire in variable_wires:
         qml.PauliX(wires=wire)
 
+    qml.Hadamard(wires=["v8"])
+
     # Appliquer une porte Z contrôlée sur tous les qubits
-    qml.MultiControlledX(wires=[*variable_wires, "out0"], work_wires=["work"])
+    qml.MultiControlledX(wires=sudoku_wires,control_values=[1,1,1,1,1,1,1,1])
+
+    qml.Hadamard(wires=["v8"])
 
     for wire in variable_wires:
         qml.PauliX(wires=wire)
@@ -75,40 +79,35 @@ def circuit():
     for wire in sudoku_wires:
         qml.Hadamard(wires=wire)
 
-    for i in range(16) :
+    for i in range(4) :
         # Première itération : Oracle et diffuseur
         sudoku_oracle(clause_list)  # Appliquer l'oracle Sudoku
         diffuser(sudoku_wires)  # Appliquer le diffuseur
     
     # Retourner l'état complet
-    return qml.sample(wires=sudoku_wires)
+    # return qml.sample(wires=sudoku_wires)
+    return qml.probs(wires=sudoku_wires)
 
+# print(circuit())
+
+# Exécuter le circuit et récupérer les mesures
+proba_list = circuit()
+etat_list = []
+
+# Afficher les résultats
+print("\nRésultats des mesures :")
+for i in range(len(proba_list)) :
+    etat_list.append(bin(i))
+    print(etat_list[i] + " : " + str(proba_list[i]))
 
 # Dessiner le circuit
 drawer = qml.draw(circuit)
 print("Dessin du circuit :")
 print(drawer())
 
-# Exécuter le circuit et récupérer les mesures
-samples = circuit()
-
-# Convertir les résultats en une forme lisible
-results = ["".join(map(str, sample)) for sample in samples]
-
-# Compter les occurrences des résultats
-counts = Counter(results)
-
-# Afficher les résultats
-print("\nRésultats des mesures :")
-for state, count in counts.items():
-    print(f"{state}: {count}")
-
 # Créer un histogramme des résultats
-plt.bar(counts.keys(), counts.values())
+plt.bar(etat_list, proba_list)
 plt.xlabel("État mesuré")
 plt.ylabel("Nombre d'occurrences")
 plt.title("Histogramme des résultats mesurés")
 plt.show()
-
-
-
