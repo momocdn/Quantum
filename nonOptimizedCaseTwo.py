@@ -100,7 +100,7 @@ print(drawer())
 # Créer un histogramme des résultats
 plt.bar(etat_list, proba_list)
 plt.xlabel("État mesuré")
-plt.ylabel("Nombre d'occurrences")
+plt.ylabel("Probabilité")
 plt.title("Histogramme des résultats mesurés")
 plt.show()
 
