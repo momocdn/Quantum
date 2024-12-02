@@ -126,16 +126,6 @@ def decompose(tape: QuantumTape) -> QuantumTape:
     return tape
 
 
-# Définir un device
-# dev = qml.device("default.qubit")
-
-
-# # Le noeud à expandre
-# @qml.qnode(dev)
-# def circuit():
-#     qml.MultiControlledX([0, 1, 2, 3, 4, 5], [6])
-#     return qml.probs()
-
 
 # Une fonction utilitaire qui crée un noeud à partir d'un tape
 # Il y a surement un meilleur moyen de faire ça, mais c'est ce que j'ai

@@ -1,7 +1,11 @@
 import pennylane as qml
 from matplotlib import pyplot as plt
+import pennylane as qml
+from pennylane.tape import QuantumTape
+from pennylane.operation import Operation
+from pennylane.measurements import MeasurementProcess
+from pennylane.transforms import create_expand_fn
 from pennylane import numpy as np
-from collections import Counter
 
 # Liste des clauses
 clause_list = [[0, 1, 2],
@@ -109,3 +113,57 @@ plt.xlabel("État mesuré")
 plt.ylabel("Nombre d'occurrences")
 plt.title("Histogramme des résultats mesurés")
 plt.show()
+
+# Les portes de base de notre expansion
+# Je triche ici en rajoutant RZ, RX, RY
+# Mais c'est surement ok vu que ce qui nous intéresse au final c'est les CNOT
+base_gates = ["T", "Adjoint(T)",
+              "S", "Adjoint(S)",
+              "SX", "Adjoint(SX)",
+              "PauliX", "PauliY", "PauliZ",
+              "Hadamard", "CNOT",
+              "RZ", "RX", "RY"]
+
+
+
+# Une fonction utilitaire qui crée un noeud à partir d'un tape
+# Il y a surement un meilleur moyen de faire ça, mais c'est ce que j'ai
+@qml.qnode(dev)
+def arbitrary_circuit(tape: QuantumTape, measurement=qml.counts):
+    """
+    Create a quantum function out of a tape and a default measurement to use (overrides the measurements in the tape)
+    """
+    for op in tape.operations:
+        if len(op.parameters) > 0:
+            qml.apply(op)
+        else:
+            qml.apply(op)
+
+    def get_wires(mp: MeasurementProcess):
+        return [w for w in mp.wires] if mp is not None and mp.wires is not None and len(mp.wires) > 0 else tape.wires
+
+    # Retourner une liste de mesures si on a plusieurs mesures, sinon retourner une seule mesure
+    return [measurement(wires=get_wires(meas)) for meas in tape.measurements] if len(tape.measurements) > 1 \
+        else measurement(wires=get_wires(tape.measurements[0] if len(tape.measurements) > 0 else None))
+
+def decompose(tape: QuantumTape) -> QuantumTape:
+    def stop_at(op: Operation):
+        return op.name in base_gates
+
+    # PennyLane create_expand_fn does the job for us
+    custom_expand_fn = create_expand_fn(depth=9, stop_at=stop_at)
+    tape = custom_expand_fn(tape)
+    return tape
+
+# Exécuter le circuit, récupérer le tape, décomposer le tape
+circuit()
+tape = circuit.tape
+tape = decompose(tape)
+
+# Créer un circuit à partir du tape décomposé et récupérer les specs
+specs = qml.specs(arbitrary_circuit)(tape)
+resources = specs["resources"]
+
+# Voilà le gate count
+print("\n".join([f"{k} : {v}" for k, v in resources.gate_types.items()]))
+
